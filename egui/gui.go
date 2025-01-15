@@ -7,9 +7,13 @@ package egui
 //go:generate core generate -add-types
 
 import (
+	"fmt"
+	"io/ioutil"
+
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	_ "cogentcore.org/core/gpu/gosl/slbool/slboolcore" // include to get gui views
+	"cogentcore.org/core/htmlcore"
 	"cogentcore.org/core/plot/plotcore"
 	"cogentcore.org/core/tensor/tensorcore"
 	"github.com/emer/emergent/v2/etime"
@@ -73,6 +77,7 @@ func (gui *GUI) UpdateWindow() {
 	gui.Body.Scene.NeedsRender()
 	// todo: could update other stuff but not really necessary
 }
+
 // GoUpdateWindow triggers an update on window body,
 // for calling from a separate goroutine.
 func (gui *GUI) GoUpdateWindow() {
@@ -96,7 +101,7 @@ func (gui *GUI) Stopped() {
 }
 
 // MakeBody returns default window Body content
-func (gui *GUI) MakeBody(sim any, appname, title, about string, readme ...string) {
+func (gui *GUI) MakeBody(sim any, appname, title, about string, url ...string) {
 	core.NoSentenceCaseFor = append(core.NoSentenceCaseFor, "github.com/emer")
 
 	gui.Body = core.NewBody(appname).SetTitle(title)
@@ -116,9 +121,26 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string, readme ...string
 	gui.Tabs = core.NewTabs(split)
 	gui.Tabs.Name = "tabs"
 
-	if len(readme) > 0 {
+	if len(url) > 0 {
 		gui.ReadMe = core.NewFrame(split)
 		gui.ReadMe.Name = "readme"
+
+		ctx := htmlcore.NewContext()
+		ctx.PageURL = url[0]
+		resp, err := htmlcore.Get(ctx, "README.md?raw=true")
+		if err != nil {
+			fmt.Println("Error fetching the webpage:", err)
+			return
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println("Error reading the response body:", err)
+			return
+		}
+
+		htmlcore.ReadMDString(ctx, gui.ReadMe, string(body))
 
 		split.SetTiles(
 			core.TileSecondLong,
