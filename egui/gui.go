@@ -126,15 +126,21 @@ func (gui *GUI) MakeBody(sim any, appname, title, about string, readme ...embed.
 		gui.addReadme(readme[0], split)
 	}
 
-	split.SetSplits(.2, .8)
+	split.SetTileSplits(.2, .6, .2)
 }
 
 func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 	gui.Readme = core.NewFrame(split)
 	gui.Readme.Name = "readme"
 
-	split.SetTiles(core.TileSecondLong)
-	split.SetTileSplits(.8, .2)
+	//split.SetTiles(core.TileSecondLong)
+	//split.SetTileSplits(.8, .2)
+
+	button := core.NewFuncButton(gui.Readme).SetFunc(func() {
+		gui.toggleReadme(split)
+	})
+
+	button.SetText("Toggle View")
 
 	ctx := htmlcore.NewContext()
 
@@ -147,6 +153,21 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 	if errors.Log(err) == nil {
 		htmlcore.ReadMDString(ctx, gui.Readme, string(readme))
 	}
+}
+
+func (gui *GUI) toggleReadme(split *core.Splits) {
+	if split.Tiles[0] == core.TileSecondLong {
+		split.SetTiles(core.TileSpan)
+		split.SetTileSplits(.2, .6, .2)
+		gui.Readme.Update()
+	} else {
+		split.SetTiles(core.TileSecondLong)
+		split.SetSplits(.2, .8)
+		split.SetTileSplits(.8, .2)
+		gui.Readme.Update()
+	}
+
+	gui.UpdateWindow()
 }
 
 // AddNetView adds NetView in tab with given name
