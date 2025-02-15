@@ -17,6 +17,7 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/htmlcore"
+	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/system"
 	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
@@ -170,20 +171,38 @@ func (gui *GUI) readmeWikilink(prefix string) htmlcore.WikilinkHandler {
 }
 
 func (gui *GUI) readmeOpenURL(url string) {
+	found := false
 	if strings.HasPrefix(url, "sim://") {
 		fmt.Println("open url: ", url)
 		text := strings.TrimPrefix(url, "sim://")
-		gui.Body.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
-			if labels.ToLabel(cwb.Name) == labels.ToLabel(text) {
-				fmt.Println("found widget")
-				fmt.Println(cwb.Name)
-				cwb.SetFocus()
+		gui.Body.Scene.WidgetWalkDown(func(cw core.Widget, cwb *core.WidgetBase) bool {
+			// fmt.Println("Current widget Base:", cwb)
+			// fmt.Println("Widget found = ", WidgetFound)
+			if found {
 				return tree.Break
+			}
+			if strings.ToLower(labels.ToLabel(cw)) == strings.ToLower(text) {
+				if cwb.AbilityIs(abilities.Focusable) {
+					fmt.Printf("labels.ToLabel(cw): %v\n", labels.ToLabel(cw))
+					fmt.Printf("text: %v\n", text)
+					// fmt.Println("found widget")
+					// fmt.Println(cwb.Name)
+					cwb.SetFocus()
+					// fmt.Println("focus set")
+					found = true
+					return tree.Break
+				} else {
+					next := core.AsWidget(tree.Next(cwb))
+					next.SetFocus()
+					return tree.Break
+				}
 			} else {
 				return tree.Continue
 			}
 		})
-	} else {
+		// fmt.Println("WidgetWalkDown Break")
+	}
+	if !found {
 		system.TheApp.OpenURL(url)
 	}
 }
