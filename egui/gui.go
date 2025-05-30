@@ -20,9 +20,9 @@ import (
 	"cogentcore.org/core/htmlcore"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/styles/abilities"
-	"cogentcore.org/core/styles/units"
 	"cogentcore.org/core/system"
-	"cogentcore.org/core/texteditor"
+	"cogentcore.org/core/text/rich"
+	"cogentcore.org/core/text/textcore"
 	"cogentcore.org/core/tree"
 	_ "cogentcore.org/lab/gosl/slbool/slboolcore" // include to get gui views
 	"github.com/emer/emergent/v2/etime"
@@ -155,14 +155,14 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 
 	ctx.OpenURL = gui.readmeOpenURL
 
-	eds := []*texteditor.Editor{}
+	eds := []*textcore.Editor{}
 
-	ctx.ElementHandlers["question"] = func(ctx *htmlcore.Context) bool {
-		ed := texteditor.NewEditor(ctx.BlockParent)
-		ed.Buffer.Options.LineNumbers = false
+	ctx.ElementHandlers["sim-question"] = func(ctx *htmlcore.Context) bool {
+		ed := textcore.NewEditor(ctx.BlockParent)
+		ed.Lines.Settings.EditorSettings.LineNumbers = false
 		ed.Styler(func(s *styles.Style) {
-			s.SetMono(false)
-			s.Padding.SetBottom(units.Em(0))
+			s.Font.Family = rich.SansSerif
+			s.Min.Y.Em(10)
 		})
 		eds = append(eds, ed)
 		id := htmlcore.GetAttr(ctx.Node, "id")
@@ -174,7 +174,7 @@ func (gui *GUI) addReadme(readmefs embed.FS, split *core.Splits) {
 		clipboard := gui.Readme.Clipboard()
 		var ab strings.Builder
 		for _, ed := range eds {
-			ab.WriteString("Question " + ed.Name + ":\n" + ed.Buffer.String() + "\n")
+			ab.WriteString("Question " + ed.Name + ":\n" + ed.Lines.String() + "\n")
 		}
 		answers := ab.String()
 		md := mimedata.NewText(answers)

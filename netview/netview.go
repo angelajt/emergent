@@ -25,7 +25,7 @@ import (
 	"cogentcore.org/core/math32/minmax"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/system"
-	"cogentcore.org/core/texteditor"
+	"cogentcore.org/core/text/texteditor"
 	"cogentcore.org/core/tree"
 	"cogentcore.org/core/types"
 	"cogentcore.org/core/xyz"
